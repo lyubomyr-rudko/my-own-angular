@@ -1,0 +1,24 @@
+{
+  "name": "my-own-angular",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "grunt": "^0.4.5",
+    "jquery": "^2.2.0",
+    "lodash": "^4.0.0"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "^0.12.0",
+    "grunt-testem-mincer": "^0.5.18",
+    "sinon": "^1.17.2"
+  }
+}
