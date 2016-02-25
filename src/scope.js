@@ -307,8 +307,76 @@ Scope.prototype.$destroy = function() {
 };
 
 Scope.prototype.$watchCollection = function(watchFn, listenerFn) {
-  var internalWatchFn = function(scope) {};
-  var internalListenerFn = function() {};
-  
+  var self = this;
+  var newValue;
+  var oldValue;
+  var oldValueLength;
+  var changeCount = 0;
+
+
+  var internalWatchFn = function(scope) {
+    var newValueLength;
+    newValue = watchFn(scope);
+    if (_.isObject(newValue)) {
+      if (_.isArrayLike(newValue)) {
+        if (!_.isArray(oldValue)) {
+          changeCount += 1;
+          oldValue = [];
+        }
+        if (oldValue.length !== newValue.length) {
+          changeCount += 1;
+          oldValue.length = newValue.length;
+        }
+        _.forEach(newValue, function (newValueItem, index) {
+          if (!self.$$areEqual(newValueItem, oldValue[index], false)) {
+            changeCount += 1;
+            oldValue[index] = newValueItem;
+          }
+        });
+      } else {
+        if (!_.isObject(oldValue) || _.isArrayLike(oldValue)) {
+          changeCount += 1;
+          oldValue = {};
+          oldValueLength = 0;
+        }
+        newValueLength = 0;
+        _.forOwn(newValue, function (newValueItem, key) {
+          newValueLength += 1;
+          if (oldValue.hasOwnProperty(key)) {
+            if (!self.$$areEqual(newValueItem, oldValue[key], false)) {
+              changeCount += 1;
+              oldValue[key] = newValueItem;
+            }
+          } else {
+            changeCount += 1;
+            oldValueLength += 1;
+            oldValue[key] = newValueItem;
+          }
+        });
+        if (oldValueLength > newValueLength) {
+          changeCount += 1;
+          _.forOwn(oldValue, function (oldValueItem, key) {
+            if (!newValue.hasOwnProperty(key)) {
+              oldValueLength -= 1;
+              delete oldValue[key];
+            }
+          });
+        }
+      }
+    } else {
+      if (!self.$$areEqual(newValue, oldValue, false)) {
+        changeCount += 1;
+      }
+
+      oldValue = newValue;
+    }
+
+    return changeCount;
+  };
+
+  var internalListenerFn = function() {
+    listenerFn(newValue, oldValue, self);
+  };
+
   return this.$watch(internalWatchFn, internalListenerFn);
 };
